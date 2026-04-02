@@ -56,6 +56,20 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           </NavLink>
         </li>
 
+         <li>
+          <NavLink
+            to="/Contact"   // ⚠️ lowercase recommended
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) =>
+              isActive
+                ? "block text-white font-bold"
+                : "block text-gray-300 hover:text-white"
+            }
+          >
+            Contact
+          </NavLink>
+        </li>
+
       </ul>
 
     </div>

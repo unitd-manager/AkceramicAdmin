@@ -5,6 +5,7 @@ import Products from "./pages/Products";
 import Order from "./pages/Order"
 import AddProduct from "./pages/AddProduct";
 import EditProduct from "./pages/EditProduct";
+import Contact from "./pages/Contact"
 // import Login from "./Auth/Login";
 // import ProtectedRoute from "./Auth/ProtectedRoute";
 
@@ -27,6 +28,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="/Products" element={<Products />} />
             <Route path="/Order" element={<Order />} />
+            <Route path= "/Contact" element={<Contact/>}/>
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/edit-product/:id" element={<EditProduct />} />
       </Route>

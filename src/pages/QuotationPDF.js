@@ -28,7 +28,8 @@ const styles = StyleSheet.create({
 
   logo: {
     width: 150,
-    height: 125
+    height: 125,
+    borderRadius:50
   },
 
   company: {
