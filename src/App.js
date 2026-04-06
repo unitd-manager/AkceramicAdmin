@@ -6,6 +6,7 @@ import Order from "./pages/Order"
 import AddProduct from "./pages/AddProduct";
 import EditProduct from "./pages/EditProduct";
 import Contact from "./pages/Contact"
+import Offer from "./pages/Offer";
 // import Login from "./Auth/Login";
 // import ProtectedRoute from "./Auth/ProtectedRoute";
 
@@ -29,6 +30,7 @@ function App() {
           <Route path="/Products" element={<Products />} />
             <Route path="/Order" element={<Order />} />
             <Route path= "/Contact" element={<Contact/>}/>
+                  <Route path= "/Offer" element={<Offer/>}/>
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/edit-product/:id" element={<EditProduct />} />
       </Route>

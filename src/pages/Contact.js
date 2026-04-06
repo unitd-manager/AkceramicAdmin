@@ -15,14 +15,23 @@ export default function Contact() {
 const [formData, setFormData] = useState({
   name: "",
   email: "",
-  phone: ""
+  phone: "",
+  address_area: "",
+  address_city: "",
+  pincode: "",
+  published: 1
 });
+
 const openEdit = (user) => {
   setEditUser(user);
   setFormData({
     name: user.name || "",
     email: user.email || "",
-    phone: user.phone || ""
+    phone: user.phone || "",
+    address_area: user.address_area || "",
+    address_city: user.address_city || "",
+    pincode: user.pincode || "",
+    published: user.published || 1
   });
 };
 
@@ -312,6 +321,27 @@ const handleUpdate = () => {
             value={formData.phone}
             onChange={handleChange}
             placeholder="Phone"
+            className="border w-full mb-3 p-2 rounded"
+          />
+           <input
+            name="address_area"
+            value={formData.address_area}
+            onChange={handleChange}
+            placeholder="Address 1"
+            className="border w-full mb-3 p-2 rounded"
+          />
+           <input
+            name="address_city"
+            value={formData.address_city}
+            onChange={handleChange}
+            placeholder="Address 2"
+            className="border w-full mb-3 p-2 rounded"
+          />
+           <input
+            name="pincode"
+            value={formData.pincode}
+            onChange={handleChange}
+            placeholder="Pincode"
             className="border w-full mb-3 p-2 rounded"
           />
 

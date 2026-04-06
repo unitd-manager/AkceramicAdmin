@@ -70,23 +70,32 @@ export default function EditProduct() {
 
   // 🚀 SUBMIT
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
 
   try {
 
-    // ✅ 1. UPDATE PRODUCT
+    // ✅ UPDATE PRODUCT
     const formData = new FormData();
 
+    // 🔥 avoid duplicate product_id
     Object.keys(form).forEach(key => {
-      formData.append(key, form[key]);
+      if (key !== "product_id") {
+        formData.append(key, form[key]);
+      }
     });
 
+    // ✅ add only once
     formData.append("product_id", id);
+
+    // 🧪 DEBUG (optional)
+    // for (let pair of formData.entries()) {
+    //   console.log(pair[0], pair[1]);
+    // }
 
     await api.post("/Product/updateProduct", formData);
 
-    // ✅ 2. ADD NEW IMAGES (if any)
+    // ✅ ADD MULTIPLE IMAGES
     if (newImages.length > 0) {
 
       const imgData = new FormData();
@@ -127,24 +136,165 @@ export default function EditProduct() {
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <div className="grid md:grid-cols-2 gap-4">
+              <div>
+    <label className="block text-sm font-semibold mb-1 text-gray-700">
+      Product Name
+    </label>
+    <input
+      name="product_name"
+      value={form.product_name || ""}
+      onChange={handleChange}
+      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400"
+    />
+  </div>
+      {/* BRAND */}
+  <div>
+    <label className="block text-sm font-semibold mb-1 text-gray-700">
+      Brand
+    </label>
+    <select
+      name="brand"
+      value={form.brand || ""}
+      onChange={handleChange}
+      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400"
+    >
+      <option value="">Select Brand</option>
+      <option value="Varmora">Varmora</option>
+      <option value="Bonzer7">Bonzer 7</option>
+      <option value="Hindware">Hindware</option>
+      <option value="Somany">Somany</option>
+      <option value="Sunheart">Sunheart</option>
+      <option value="Bluezone">Bluezone</option>
+      <option value="Active">Active</option>
+      <option value="BX">BX</option>
+      <option value="Simpolo">Simpolo</option>
+      <option value="Captiva">Captiva</option>
+      <option value="RJM">RJM</option>
+      <option value="LIJO">LIJO</option>
+    </select>
+  </div>
 
-            <input name="product_name" value={form.product_name || ""} onChange={handleChange} placeholder="Name" className="input" />
-            <input name="brand" value={form.brand || ""} onChange={handleChange} placeholder="Brand" className="input" />
-            <input name="price" value={form.price || ""} onChange={handleChange} placeholder="Price" className="input" />
-            <input name="mrp" value={form.mrp || ""} onChange={handleChange} placeholder="MRP" className="input" />
-            <input name="qty" value={form.qty || ""} onChange={handleChange} placeholder="Qty" className="input" />
-            <input name="size" value={form.size || ""} onChange={handleChange} placeholder="Size" className="input" />
-            <input name="finish" value={form.finish || ""} onChange={handleChange} placeholder="Finish" className="input" />
+  {/* PRICE */}
+  <div>
+    <label className="block text-sm font-semibold mb-1 text-gray-700">
+      Price
+    </label>
+    <input
+      name="price"
+      value={form.price || ""}
+      onChange={handleChange}
+      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-400"
+    />
+  </div>
 
-          </div>
+  {/* MRP */}
+  <div>
+    <label className="block text-sm font-semibold mb-1 text-gray-700">
+      MRP
+    </label>
+    <input
+      name="mrp"
+      value={form.mrp || ""}
+      onChange={handleChange}
+      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-400"
+    />
+  </div>
 
-          <textarea
-            name="description"
-            value={form.description || ""}
-            onChange={handleChange}
-            placeholder="Description"
-            className="input w-full"
-          />
+  {/* QTY */}
+  <div>
+    <label className="block text-sm font-semibold mb-1 text-gray-700">
+      Quantity
+    </label>
+    <input
+      name="qty"
+      value={form.qty || ""}
+      onChange={handleChange}
+      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-400"
+    />
+  </div>
+
+  {/* SIZE */}
+  <div>
+    <label className="block text-sm font-semibold mb-1 text-gray-700">
+      Tile Size
+    </label>
+    <select
+      name="size"
+      value={form.size || ""}
+      onChange={handleChange}
+      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-400"
+    >
+      <option value="">Select Size</option>
+      <option value="1200 x 600">1200 x 600</option>
+      <option value="600 x 600">600 x 600</option>
+      <option value="18 x 12">18 x 12</option>
+      <option value="15 x 12">15 x 12</option>
+      <option value="1200 x 200">1200 x 200</option>
+      <option value="24 x 12">24 x 12</option>
+    </select>
+  </div>
+
+  {/* FINISH */}
+  <div>
+    <label className="block text-sm font-semibold mb-1 text-gray-700">
+      Tile Finish
+    </label>
+    <select
+      name="finish"
+      value={form.finish || ""}
+      onChange={handleChange}
+      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-400"
+    >
+      <option value="">Select Finish</option>
+      <option value="Glossy">Glossy</option>
+      <option value="Matt">Matt</option>
+      <option value="High Gloss">High Gloss</option>
+      <option value="Polished">Polished</option>
+      <option value="Carving">Carving</option>
+      <option value="3D Elevation">3D Elevation</option>
+      <option value="Rustic">Rustic</option>
+      <option value="Wood">Wood</option>
+      <option value="Stone">Stone</option>
+      <option value="Anti Skid">Anti Skid</option>
+    </select>
+  </div>         
+   <div>
+    <label className="block text-sm font-semibold mb-1 text-gray-700">
+      Tile category
+    </label>
+    <select
+      name="product_category"
+      value={form.product_category || ""}
+      onChange={handleChange}
+      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-400"
+    >
+      <option value="">Select Product Category</option>
+      <option value="Tiles">Tiles</option>
+      <option value="Wall Tiles">Wall Tiles</option>
+       <option value="Floar Tiles">Floar Tiles</option>
+       <option value="Elivation Tiles">Elivation Tiles</option>
+        <option value="Bathroom wall Tiles">Bathroom wall Tiles</option>
+         <option value="Bathroom floar Tiles">Bathroom floar Tiles</option>
+             <option value="Wooden Tiles">Wooden Tiles</option>
+              <option value="Wooden strip">Wooden strip</option>
+      <option value="sanitary ware">sanitary ware</option>
+      <option value="cp fittings">cp fittings</option>
+    </select>
+  </div>   
+   </div>
+
+        <div className="mt-4">
+  <label className="block text-sm font-semibold mb-1 text-gray-700">
+    Description
+  </label>
+  <textarea
+    name="description"
+    value={form.description || ""}
+    onChange={handleChange}
+    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-400"
+    rows="4"
+  />
+</div>
 
           {/* 🖼 EXISTING */}
           <h4 className="font-semibold">Existing Images</h4>
@@ -194,9 +344,11 @@ export default function EditProduct() {
 
           <input type="file" multiple onChange={handleFile} />
 
-          <button className="bg-blue-500 text-white px-4 py-2 rounded w-full">
-            Update Product
-          </button>
+         <button
+  className="w-full mt-6 bg-gradient-to-r from-red-500 to-pink-500 text-white py-2 rounded-lg font-semibold hover:scale-105 transition"
+>
+  Update Product
+</button>
 
         </form>
       </div>

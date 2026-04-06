@@ -125,7 +125,7 @@ export default function Order() {
                   </span>
                 </td>
 
-                <td>{item.created_date?.slice(0, 10)}</td>
+                <td>{item.created_at?.slice(0, 10)}</td>
 
                 <td className="space-x-2">
                   <button
@@ -170,7 +170,7 @@ export default function Order() {
 
             <p className="mt-2">{item.name}</p>
             <p className="text-sm text-gray-500">{item.phone}</p>
-            <p className="text-sm">{item.created_date?.slice(0, 10)}</p>
+            <p className="text-sm">{item.created_at?.slice(0, 10)}</p>
 
             <div className="flex gap-2 mt-3">
               <button
