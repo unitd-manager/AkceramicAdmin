@@ -167,7 +167,7 @@ export default function QuotationPDF({ order, items }) {
               <Image
                 src={
                   item.image
-                    ? `http://localhost:5000/uploads/${item.image}`  
+                    ? `https://akceramicworldadmin.unitdtechnologies.com/uploads/${item.image}`  
                     : "/no-image.png"
                 }
                 style={styles.productImage}

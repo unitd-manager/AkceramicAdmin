@@ -315,7 +315,7 @@ export default function Order() {
                     <img
                       src={
                         item.image
-                          ? `http://localhost:5000/uploads/${item.image}`
+                          ? `https://akceramicworldadmin.unitdtechnologies.com/uploads/${item.image}`
                           : "https://via.placeholder.com/100"
                       }
                       alt={item.product_name}

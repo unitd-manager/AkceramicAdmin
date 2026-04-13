@@ -83,6 +83,19 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             Offers
           </NavLink>
         </li>
+         <li>
+          <NavLink
+            to="/Customers"   // ⚠️ lowercase recommended
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) =>
+              isActive
+                ? "block text-white font-bold"
+                : "block text-gray-300 hover:text-white"
+            }
+          >
+            Customers
+          </NavLink>
+        </li>
 
       </ul>
 

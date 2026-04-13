@@ -89,8 +89,8 @@ export default function OfferAdmin() {
       published: item.published
     });
 
-    setPreviewImage(`http://localhost:5000/uploads/offers/${item.image}`);
-    setPreviewVideo(item.video ? `http://localhost:5000/uploads/offers/${item.video}` : null);
+    setPreviewImage(`https://akceramicworldadmin.unitdtechnologies.com/uploadoffers/${item.image}`);
+    setPreviewVideo(item.video ? `https://akceramicworldadmin.unitdtechnologies.com/uploadoffers/${item.video}` : null);
   };
 
   // 🔥 OPEN ADD
@@ -208,11 +208,11 @@ export default function OfferAdmin() {
                 className="w-full h-48 object-contain bg-black rounded"
                 controls
               >
-                <source src={`http://localhost:5000/uploads/offers/${item.video}`} />
+                <source src={`https://akceramicworldadmin.unitdtechnologies.com/uploadoffers/${item.video}`} />
               </video>
             ) : (
               <img
-                src={`http://localhost:5000/uploads/offers/${item.image}`}
+                src={`https://akceramicworldadmin.unitdtechnologies.com/uploadoffers/${item.image}`}
                 className="w-full h-48 object-contain bg-gray-100 rounded"
               />
             )}

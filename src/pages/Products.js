@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { FaPlus } from "react-icons/fa";
 import api from "../constant/api";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -101,12 +102,29 @@ export default function Products() {
           Filter ⚙️
         </button>
 
-        <button
-          onClick={() => navigate("/add-product")}
-          className="bg-blue-500 text-white px-4 py-2 rounded hidden md:block"
-        >
-          + Add Product
-        </button>
+       {/* Desktop */}
+<button
+  onClick={() => navigate("/add-product")}
+  className="bg-blue-500 text-white px-4 py-2 rounded hidden md:block"
+>
+  + Add Product
+</button>
+
+{/* Mobile Floating Button */}
+{/* <button
+  onClick={() => navigate("/add-product")}
+  className="fixed bottom-25 right-20 bg-blue-500 text-white px-4 py-3 rounded-full shadow-lg md:hidden"
+>
+  +
+</button> */}
+
+
+<button
+  onClick={() => navigate("/add-product")}
+  className="fixed bottom-10 left-5 bg-blue-500 text-white w-14 h-14 flex items-center justify-center rounded-full shadow-xl md:hidden z-50"
+>
+  <FaPlus />
+</button>
       </div>
 
       {/* DESKTOP FILTER */}
@@ -201,7 +219,7 @@ export default function Products() {
 
                 <td>
                   <img
-                    src={`http://localhost:5000/uploads/${item.image}`}
+                    src={`https://akceramicworldadmin.unitdtechnologies.com/uploads/${item.images}`}
                     alt=""
                     className="w-12 mx-auto rounded cursor-pointer"
                     onClick={() => {
@@ -350,7 +368,7 @@ export default function Products() {
                     onMouseLeave={() => setZoomStyle({})}
                     className="w-full h-64 rounded overflow-hidden"
                     style={{
-                      backgroundImage: `url(http://localhost:5000/uploads/${selectedProduct[currentIndex].image})`,
+                      backgroundImage: `url(https://akceramicworldadmin.unitdtechnologies.com/uploads/${selectedProduct[currentIndex].images})`,
                       backgroundSize: zoomStyle.backgroundPosition ? "200%" : "contain",
                       backgroundRepeat: "no-repeat",
                       backgroundPosition: zoomStyle.backgroundPosition || "center",

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import api from "../constant/api";
 
 export default function EditProduct() {
@@ -109,8 +110,8 @@ export default function EditProduct() {
       await api.post("/Product/addImages", imgData);
     }
 
-    alert("Updated ✅");
-    navigate("/Products");
+  
+    toast.success("Updated");
 
   } catch (err) {
     console.log(err);
@@ -124,7 +125,7 @@ export default function EditProduct() {
         onClick={() => navigate("/Products")}
         className="mb-4 text-blue-600"
       >
-        ← Back
+        ← Back List
       </button>
 
       <div className="bg-white p-6 rounded-xl shadow">
@@ -303,7 +304,7 @@ export default function EditProduct() {
               <div key={img.image_id} className="relative">
 
                 <img
-                  src={`http://localhost:5000/uploads/${img.image}`}
+                  src={`https://akceramicworldadmin.unitdtechnologies.com/uploads/${img.image}`}
                   className="w-20 h-20 object-cover rounded"
                 />
 
