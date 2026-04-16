@@ -12,6 +12,8 @@ export default function EditProduct() {
   const [existingImages, setExistingImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
 
+  const [activeTab, setActiveTab] = useState("images");
+
   // 🔥 FETCH
   useEffect(() => {
     api.post("/Product/getProductByid", { product_id: id })
@@ -25,6 +27,8 @@ export default function EditProduct() {
       });
 
   }, [id]);
+
+  
 
   // 🔄 INPUT CHANGE
   const handleChange = (e) => {
@@ -110,6 +114,9 @@ export default function EditProduct() {
       await api.post("/Product/addImages", imgData);
     }
 
+    // 🔥 REFRESH DATA AFTER UPDATE
+const res = await api.post("/Product/getProductByid", { product_id: id });
+setForm(res.data.data[0]);
   
     toast.success("Updated");
 
@@ -118,6 +125,182 @@ export default function EditProduct() {
   }
 };
 
+const generate12Labels = (item) => {
+  let arr = [];
+  for (let i = 0; i < 24; i++) {
+    arr.push(item);
+  }
+  return arr;
+};
+
+// 🖨️ PRINT LABEL
+const handlePrintQr = (items) => {
+
+  if (!Array.isArray(items)) {
+    items = [items]; // safety
+  }
+
+  const html = items.map(item => `
+    <div class="label">
+      <img src="https://akceramicworldadmin.unitdtechnologies.com/${item.qrcode}" class="qr"/>
+    </div>
+  `).join("");
+
+  const printWindow = window.open("", "_blank");
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>A k Ceramic World</title>
+
+        <style>
+          @page {
+            size: A4;
+            margin: 10mm;
+          }
+
+          body {
+            font-family: Arial;
+          }
+
+          .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+          }
+
+          .label {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+            height: 120px;
+          }
+
+          .name {
+            font-size: 12px;
+            font-weight: bold;
+          }
+
+          .price {
+            font-size: 12px;
+          }
+
+          .barcode {
+            height: 30px;
+          }
+
+          .qr {
+            height: 120px;
+            width:140px
+          }
+
+        </style>
+
+      </head>
+
+      <body>
+
+        <div class="grid">
+          ${html}
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+            window.onafterprint = () => window.close();
+          }
+        </script>
+
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+};
+
+const handlePrintBar = (items) => {
+
+  if (!Array.isArray(items)) {
+    items = [items]; // safety
+  }
+
+  const html = items.map(item => `
+    <div class="label">
+      <img src="https://akceramicworldadmin.unitdtechnologies.com/${item.barcode}" class="qr"/>
+    </div>
+  `).join("");
+
+  const printWindow = window.open("", "_blank");
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>A k Ceramic World</title>
+
+        <style>
+          @page {
+            size: A4;
+            margin: 10mm;
+          }
+
+          body {
+            font-family: Arial;
+          }
+
+          .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+          }
+
+          .label {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+            height: 120px;
+          }
+
+          .name {
+            font-size: 12px;
+            font-weight: bold;
+          }
+
+          .price {
+            font-size: 12px;
+          }
+
+          .barcode {
+            height: 30px;
+          }
+
+          .qr {
+            height: 110px;
+            width:170px
+          }
+
+        </style>
+
+      </head>
+
+      <body>
+
+        <div class="grid">
+          ${html}
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+            window.onafterprint = () => window.close();
+          }
+        </script>
+
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+};
   return (
     <div className="max-w-5xl mx-auto p-4">
 
@@ -206,13 +389,28 @@ export default function EditProduct() {
     <label className="block text-sm font-semibold mb-1 text-gray-700">
       Quantity
     </label>
+   <div className="flex gap-2">
+
     <input
+      type="number"
       name="qty"
       value={form.qty || ""}
       onChange={handleChange}
-      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-400"
+      placeholder="Box"
+      className="input w-1/2"
     />
+
+    <input
+      name="pic"
+      value={form.pic || ""}
+      onChange={handleChange}
+      placeholder="Pic"
+      className="input w-1/2"
+    />
+
   </div>
+  </div>
+  
 
   {/* SIZE */}
   <div>
@@ -228,10 +426,17 @@ export default function EditProduct() {
       <option value="">Select Size</option>
       <option value="1200 x 600">1200 x 600</option>
       <option value="600 x 600">600 x 600</option>
-      <option value="18 x 12">18 x 12</option>
-      <option value="15 x 12">15 x 12</option>
+      <option value="300 x 450">300 x 450</option>
+      <option value="15 x 10">15 x 10</option>
       <option value="1200 x 200">1200 x 200</option>
-      <option value="24 x 12">24 x 12</option>
+      <option value="300 x 600">300 x 600</option>
+        <option value="2400 x 1200">2400 x 1200</option>
+          <option value="300 x 300">300 x 300</option>
+           <option value="400 x 400">400 x 400</option>
+            <option value="200 x 200">200 x 200</option>
+            <option value="800 x 1600">800 x 1600</option>
+             <option value="1200 x 1800">1200 x 1800</option>
+             <option value="800 x 2400">800 x 2400</option>
     </select>
   </div>
 
@@ -297,6 +502,22 @@ export default function EditProduct() {
   />
 </div>
 
+<div className="flex border-b mb-4">
+            <button type="button" onClick={() => setActiveTab("images")}
+              className={`flex-1 py-2 ${activeTab === "images" ? "border-b-2 border-red-500 text-red-500" : ""}`}>
+              Images
+            </button>
+
+            <button type="button" onClick={() => setActiveTab("codes")}
+              className={`flex-1 py-2 ${activeTab === "codes" ? "border-b-2 border-red-500 text-red-500" : ""}`}>
+              QR / Barcode
+            </button>
+          </div>
+
+            {/* 🖼 TAB 1 */}
+          {activeTab === "images" && (
+            <>
+
           {/* 🖼 EXISTING */}
           <h4 className="font-semibold">Existing Images</h4>
           <div className="flex gap-3 flex-wrap">
@@ -344,7 +565,60 @@ export default function EditProduct() {
           </div>
 
           <input type="file" multiple onChange={handleFile} />
+            </>
+          )}
 
+             {/* 🔳 TAB 2 */}
+          {activeTab === "codes" && (
+            <>
+
+          {/* 🔳 BARCODE + QR */}
+<h4 className="font-semibold mt-6">Barcode / QR</h4>
+
+<div className="flex gap-6 flex-wrap">
+
+  {/* BARCODE */}
+  {form.barcode && (
+    <div>
+      <img
+        src={`https://akceramicworldadmin.unitdtechnologies.com/${form.barcode}`}
+        className="h-20 border p-1 rounded"
+      />
+    </div>
+  )}
+
+  {/* QR */}
+  {form.qrcode && (
+    <div>
+      <img
+        src={`https://akceramicworldadmin.unitdtechnologies.com/${form.qrcode}`}
+        className="h-24 border p-1 rounded"
+      />
+    </div>
+  )}
+
+</div>
+<div className="grid grid-cols-2 gap-2 mt-2">
+
+  <button
+    type="button"
+    onClick={() => handlePrintQr(generate12Labels(form))}
+    className="w-full bg-green-500 hover:bg-green-600 transition text-white py-2 rounded-lg shadow"
+  >
+    🧾 QR Code
+  </button>
+
+  <button
+    type="button"
+    onClick={() => handlePrintBar(generate12Labels(form))}
+   className="w-full bg-green-500 hover:bg-green-600 transition text-white py-2 rounded-lg shadow"
+  >
+    🧾 Barcode
+  </button>
+
+</div>
+ </>
+          )}
          <button
   className="w-full mt-6 bg-gradient-to-r from-red-500 to-pink-500 text-white py-2 rounded-lg font-semibold hover:scale-105 transition"
 >

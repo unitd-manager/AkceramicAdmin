@@ -4,6 +4,8 @@ import api from "../constant/api";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { Html5QrcodeScanner } from "html5-qrcode";
+
 export default function Products() {
 
   const [products, setProducts] = useState([]);
@@ -21,7 +23,36 @@ export default function Products() {
   const [zoomStyle, setZoomStyle] = useState({});
   const [showFilter, setShowFilter] = useState(false);
 
+  const [showScanner, setShowScanner] = useState(false);
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+  if (showScanner) {
+    const scanner = new Html5QrcodeScanner(
+      "qr-reader",
+      { fps: 10, qrbox: 250 },
+      false
+    );
+
+    scanner.render(
+      (decodedText) => {
+        // ✅ QR SUCCESS
+        console.log("QR Code:", decodedText);
+
+        // 👉 set search using product_code
+        setSearch(decodedText);
+        setShowScanner(false);
+        scanner.clear();
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+
+    return () => scanner.clear();
+  }
+}, [showScanner]);
 
   useEffect(() => {
     api.get("/Product/getProduct")
@@ -33,9 +64,11 @@ export default function Products() {
   }, []);
 
   // 🔍 FILTER
+
   let filteredProducts = products.filter((item) =>
-    item.product_name?.toLowerCase().includes(search.toLowerCase())
-  );
+  item.product_name?.toLowerCase().includes(search.toLowerCase()) ||
+  item.product_code?.toLowerCase().includes(search.toLowerCase())
+);
 
   filteredProducts = filteredProducts.filter((item) => {
     const price = Number(item.price);
@@ -87,7 +120,37 @@ export default function Products() {
     })
     .catch(err => console.log(err));
 };
+const getPagination = (currentPage, totalPages) => {
+  const pages = [];
 
+  if (totalPages <= 7) {
+    // show all pages
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    pages.push(1); // always show first
+
+    if (currentPage > 3) {
+      pages.push("...");
+    }
+
+    let start = Math.max(2, currentPage - 1);
+    let end = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    if (currentPage < totalPages - 2) {
+      pages.push("...");
+    }
+
+    pages.push(totalPages); // always show last
+  }
+
+  return pages;
+};
   return (
     <div>
 
@@ -101,6 +164,12 @@ export default function Products() {
         >
           Filter ⚙️
         </button>
+        <button
+  className="md:hidden bg-green-600 text-white px-3 py-2 rounded"
+  onClick={() => setShowScanner(true)}
+>
+  Scan QR 📷
+</button>
 
        {/* Desktop */}
 <button
@@ -170,13 +239,14 @@ export default function Products() {
       </div>
 
       {/* TABLE */}
-      <div className="overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full bg-white dark:bg-gray-800 rounded-xl shadow">
 
           <thead className="bg-gray-100 dark:bg-gray-700">
-            <tr>
-              <th className="p-3">ID</th>
-              <th>Edit</th>
+            <tr className="text-left px-4 py-2 border-t hover:bg-gray-50 dark:hover:bg-gray-700">
+             
+              <th className="p-3">Edit</th>
+               <th className="p-3">Code</th>
               <th>Name</th>
               <th>Price</th>
               <th>Qty</th>
@@ -187,10 +257,8 @@ export default function Products() {
 
           <tbody>
             {currentProducts.map((item, i) => (
-              <tr key={i} className="text-center border-t hover:bg-gray-50 dark:hover:bg-gray-700">
-
-                <td className="p-3">{item.product_id}</td>
-              <td className="p-3">
+              <tr key={i} className="text-left px-4 py-2 border-t hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td className="p-3">
   <div className="flex justify-center gap-2">
     <div className="hover:scale-[1.01] transition"></div>
 
@@ -212,6 +280,8 @@ export default function Products() {
 
   </div>
 </td>
+                <td className="p-3">{item.product_code}</td>
+      
 
                 <td>{item.product_name}</td>
                 <td>{item.price}</td>
@@ -253,43 +323,108 @@ export default function Products() {
         </table>
       </div>
 
+      {/* MOBILE CARD VIEW */}
+<div className="md:hidden space-y-4 px-2">
+  {currentProducts.map((item, i) => (
+    <div
+      key={i}
+      className="bg-white rounded-xl shadow p-3 flex gap-3 items-center"
+    >
+      {/* IMAGE */}
+      <img
+        src={`https://akceramicworldadmin.unitdtechnologies.com/uploads/${item.images}`}
+        className="w-20 h-20 object-cover rounded-lg cursor-pointer"
+        onClick={() => {
+          setSelectedProduct([...filteredProducts]);
+          setCurrentIndex(indexOfFirst + i);
+        }}
+      />
+
+      {/* DETAILS */}
+      <div className="flex-1">
+        <h2 className="font-semibold text-sm">
+          {item.product_name}
+        </h2>
+
+        <p className="text-gray-500 text-xs">
+          Code: {item.product_code}
+        </p>
+
+        <p className="text-blue-600 font-bold">
+          ₹{item.price}
+        </p>
+
+        <p className="text-xs">Qty: {item.qty}</p>
+
+        {/* ACTIONS */}
+        <div className="flex items-center justify-between mt-2">
+
+          <button
+            onClick={() => navigate(`/edit-product/${item.product_id}`)}
+            className="bg-yellow-400 text-white px-2 py-1 rounded text-xs"
+          >
+            Edit
+          </button>
+
+          <div
+            onClick={() => handleToggle(item)}
+            className={`w-10 h-5 flex items-center rounded-full p-1 cursor-pointer
+            ${item.published ? "bg-green-500" : "bg-gray-400"}`}
+          >
+            <div
+              className={`bg-white w-4 h-4 rounded-full transition
+              ${item.published ? "translate-x-5" : ""}`}
+            />
+          </div>
+
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
       {/* PAGINATION */}
       <div className="flex justify-center items-center mt-6 gap-2 flex-wrap">
 
-        <button
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-4 py-2 rounded-lg border"
-        >
-          Prev
-        </button>
+  {/* PREV */}
+  <button
+    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+    disabled={currentPage === 1}
+    className="px-3 py-2 rounded-lg border bg-white hover:bg-gray-100 disabled:opacity-50"
+  >
+    ◀
+  </button>
 
-        {[...Array(totalPages)].map((_, i) => {
-          const page = i + 1;
-          return (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(page)}
-              className={`px-4 py-2 rounded-lg border ${
-                currentPage === page
-                  ? "bg-blue-500 text-white"
-                  : ""
-              }`}
-            >
-              {page}
-            </button>
-          );
-        })}
+  {/* PAGE NUMBERS */}
+  {getPagination(currentPage, totalPages).map((page, index) => (
 
-        <button
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 rounded-lg border"
-        >
-          Next
-        </button>
+    page === "..." ? (
+      <span key={index} className="px-2">...</span>
+    ) : (
+      <button
+        key={index}
+        onClick={() => setCurrentPage(page)}
+        className={`px-3 py-2 rounded-lg border transition ${
+          currentPage === page
+            ? "bg-blue-500 text-white"
+            : "bg-white hover:bg-gray-100"
+        }`}
+      >
+        {page}
+      </button>
+    )
+  ))}
 
-      </div>
+  {/* NEXT */}
+  <button
+    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+    disabled={currentPage === totalPages}
+    className="px-3 py-2 rounded-lg border bg-white hover:bg-gray-100 disabled:opacity-50"
+  >
+    ▶
+  </button>
+
+</div>
         <AnimatePresence>
         {showFilter && (
           <>
@@ -417,7 +552,38 @@ export default function Products() {
           </motion.div>
         )}
       </AnimatePresence>
+      
+         <AnimatePresence>
+  {showScanner && (
+    <>
+      <motion.div
+        className="fixed inset-0 bg-black bg-opacity-70 z-[9998]"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setShowScanner(false)}
+      />
 
+      <motion.div
+        className="fixed bottom-0 left-0 w-full bg-white p-4 rounded-t-2xl z-[9999]"
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+      >
+        <h2 className="font-bold mb-3 text-center">Scan QR Code</h2>
+
+        <div id="qr-reader" />
+
+        <button
+          onClick={() => setShowScanner(false)}
+          className="mt-4 w-full bg-red-500 text-white py-2 rounded"
+        >
+          Close
+        </button>
+      </motion.div>
+    </>
+  )}
+</AnimatePresence>
     </div>
   );
 }
