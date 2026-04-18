@@ -22,6 +22,10 @@ export default function Customers() {
   const itemsPerPage = 5;
   const today = moment().format("YYYY-MM-DD");
 
+    const handleCall = (phone) => {
+    window.open(`tel:${phone}`);
+  };
+
   const emptyForm = {
     name: "",
     phone: "",
@@ -30,6 +34,29 @@ export default function Customers() {
     visit_date: "",
     status: "Pending"
   };
+
+const handleVisitConfirm = async (c) => {
+  const current = Number(c.visit_confirm); // ✅ FIX
+  const newValue = current === 1 ? 0 : 1;
+
+  try {
+    await api.post(`Product/updateVisitConfirm/${c.customer_id}`, {
+      visit_confirm: newValue
+    });
+
+    // ✅ instant UI update
+    setCustomers(prev =>
+      prev.map(item =>
+        item.customer_id === c.customer_id
+          ? { ...item, visit_confirm: newValue }
+          : item
+      )
+    );
+
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   const [formData, setFormData] = useState(emptyForm);
 
@@ -195,8 +222,9 @@ const statusColor = (s) =>
             <tr>
               <th>Name</th>
               <th>Phone</th>
-              <th>Follow</th>
+              <th>Follow Date</th>
               <th>Status</th>
+               <th>Follow Status</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -217,11 +245,38 @@ const statusColor = (s) =>
                     {c.status}
                   </span>
                 </td>
-
-                <td className="flex gap-2 justify-center p-2">
-                  <button onClick={()=>openEdit(c)} className="bg-yellow-500 px-2 text-white rounded">✏️</button>
-                  <button onClick={()=>sendWhatsApp(c.phone,c.name)} className="bg-green-500 px-2 text-white rounded">💬</button>
+                <td>
+                  <span className={`text-xs px-2 py-1 rounded text-white ${
+  c.visit_confirm === 1 ? "bg-green-500" : "bg-red-500"
+}`}>
+  {c.visit_confirm === 1 ? "Visited" : "Not Visited"}
+</span>
                 </td>
+       
+                <td className="flex gap-2 justify-center p-2">
+                   <button onClick={() => handleCall(c.phone)} className="bg-blue-500 text-white px-2 rounded">📞</button>
+                  <button onClick={()=>sendWhatsApp(c.phone,c.name)} className="bg-green-500 px-2 text-white rounded">💬</button>
+                  <button onClick={()=>openEdit(c)} className="bg-yellow-500 px-2 text-white rounded">✏️</button>
+         <div
+  onClick={() => handleVisitConfirm(c)}
+  className={`relative w-16 h-7 flex items-center rounded-full px-1 cursor-pointer transition
+    ${Number(c.visit_confirm) === 1 ? "bg-green-500" : "bg-gray-300"}
+  `}
+>
+  <span className="absolute left-2 text-[10px] text-white font-semibold">
+    {Number(c.visit_confirm) === 1 ? "YES" : ""}
+  </span>
+
+  <span className="absolute right-2 text-[10px] text-gray-700 font-semibold">
+    {Number(c.visit_confirm) === 1 ? "" : "NO"}
+  </span>
+
+  <div
+    className={`bg-white w-5 h-5 rounded-full shadow transform transition
+      ${Number(c.visit_confirm) === 1 ? "translate-x-9" : ""}
+    `}
+  />
+</div>  </td>
               </tr>
             ))}
           </tbody>
@@ -229,28 +284,87 @@ const statusColor = (s) =>
       </div>
 
       {/* MOBILE */}
-      <div className="md:hidden flex flex-col gap-3">
-        {currentData.map(c => (
-          <div key={c.customer_id}
-            className={`bg-white p-4 rounded-xl shadow ${
-              isToday(c.followup_date) && "border-2 border-yellow-400"
-            }`}
-          >
-            <h3 className="font-bold">{c.name}</h3>
-            <p>{c.phone}</p>
-            <p className="text-sm text-gray-500">{formatDate(c.followup_date)}</p>
+     <div className="md:hidden flex flex-col gap-3">
+  {currentData.map(c => (
+    <div
+      key={c.customer_id}
+      className={`bg-white p-4 rounded-xl shadow ${
+        isToday(c.followup_date) && "border-2 border-yellow-400"
+      }`}
+    >
+      {/* NAME */}
+      <h3 className="font-bold text-sm">{c.name}</h3>
 
-            <span className={`text-white px-2 py-1 rounded text-sm ${statusColor(c.status)}`}>
-              {c.status}
-            </span>
+      {/* PHONE */}
+      <p className="text-sm">{c.phone}</p>
 
-            <div className="flex gap-2 mt-2">
-              <button onClick={()=>openEdit(c)} className="flex-1 bg-yellow-500 text-white py-1 rounded">Edit</button>
-              <button onClick={()=>sendWhatsApp(c.phone,c.name)} className="flex-1 bg-green-500 text-white py-1 rounded">WhatsApp</button>
-            </div>
-          </div>
-        ))}
+      {/* DATE */}
+      <p className="text-xs text-gray-500">
+        {formatDate(c.followup_date)}
+      </p>
+
+      {/* STATUS + VISIT */}
+      <div className="flex items-center gap-2 mt-1 flex-wrap">
+        <span
+          className={`text-white px-2 py-1 rounded text-xs ${statusColor(c.status)}`}
+        >
+          {c.status}
+        </span>
+
+        <span
+          className={`text-xs px-2 py-1 rounded text-white ${
+            c.visit_confirm === 1 ? "bg-green-500" : "bg-red-500"
+          }`}
+        >
+          {c.visit_confirm === 1 ? "Visited" : "Not Visited"}
+        </span>
       </div>
+
+      {/* ACTIONS */}
+      <div className="flex items-center justify-between gap-2 mt-3">
+
+        {/* CALL */}
+        <button
+          onClick={() => handleCall(c.phone)}
+          className="bg-blue-500 text-white px-3 py-1 rounded text-xs"
+        >
+          📞
+        </button>
+
+        {/* WHATSAPP */}
+        <button
+          onClick={() => sendWhatsApp(c.phone, c.name)}
+          className="flex-1 bg-green-500 text-white py-1 rounded text-xs"
+        >
+          WhatsApp
+        </button>
+
+        {/* EDIT */}
+        <button
+          onClick={() => openEdit(c)}
+          className="flex-1 bg-yellow-500 text-white py-1 rounded text-xs"
+        >
+          Edit
+        </button>
+
+        {/* 🔥 TOGGLE SWITCH (REPLACED BUTTON) */}
+       <div
+  onClick={() => handleVisitConfirm(c)}
+  className={`relative w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition
+    ${Number(c.visit_confirm) === 1 ? "bg-green-500" : "bg-gray-300"}
+  `}
+>
+  <div
+    className={`bg-white w-5 h-5 rounded-full shadow transform transition
+      ${Number(c.visit_confirm) === 1 ? "translate-x-6" : ""}
+    `}
+  />
+</div>
+
+      </div>
+    </div>
+  ))}
+</div>
 
       {/* FLOAT BUTTON */}
       <button

@@ -20,8 +20,8 @@ import axios from "axios";
 // import axios from 'axios'
 
 const api = axios.create({
-baseURL: 'https://akceramicworldadmin.unitdtechnologies.com:4005',
-// baseURL: 'http://localhost:5000'
+// baseURL: 'https://akceramicworldadmin.unitdtechnologies.com:4005',
+baseURL: 'http://localhost:5000'
 });
 
 export default api

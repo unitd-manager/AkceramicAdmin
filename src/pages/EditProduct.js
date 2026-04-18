@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../constant/api";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function EditProduct() {
 
@@ -11,6 +12,10 @@ export default function EditProduct() {
   const [form, setForm] = useState({});
   const [existingImages, setExistingImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
+  // const [selectedProduct, setSelectedProduct] = useState(null);
+   const [currentIndex, setCurrentIndex] = useState(0);
+   const [zoomStyle, setZoomStyle] = useState({});
+   const [selectedProduct, setSelectedProduct] = useState([]);
 
   const [activeTab, setActiveTab] = useState("images");
 
@@ -38,18 +43,44 @@ export default function EditProduct() {
    console.log("new image",newImages)
 
   // 📷 NEW IMAGE
-  const handleFile = (e) => {
-    console.log(e.target.files)
+  // const handleFile = (e) => {
+  //   console.log(e.target.files)
 
-    const files = Array.from(e.target.files);
+  //   const files = Array.from(e.target.files);
 
-    const mapped = files.map(file => ({
-      file: file,
-      url: URL.createObjectURL(file)
-    }));
+  //   const mapped = files.map(file => ({
+  //     file: file,
+  //     url: URL.createObjectURL(file)
+  //   }));
 
-    setNewImages(prev => [...prev, ...mapped]);
-  };
+  //   setNewImages(prev => [...prev, ...mapped]);
+  // };
+
+  const MAX_SIZE = 750 * 1024; // 750 KB
+
+const handleFile = (e) => {
+  const files = Array.from(e.target.files);
+
+  const validFiles = [];
+  const invalidFiles = [];
+
+  files.forEach(file => {
+    if (file.size <= MAX_SIZE) {
+      validFiles.push({
+        file: file,
+        url: URL.createObjectURL(file)
+      });
+    } else {
+      invalidFiles.push(file.name);
+    }
+  });
+
+  if (invalidFiles.length > 0) {
+    toast.error(`These files exceed 750KB: ${invalidFiles.join(", ")}`);
+  }
+
+  setNewImages(prev => [...prev, ...validFiles]);
+};
 
   // ❌ DELETE EXISTING
  const handleDeleteExisting = (img) => {
@@ -131,6 +162,16 @@ const generate12Labels = (item) => {
     arr.push(item);
   }
   return arr;
+};
+
+ const handleZoom = (e) => {
+  const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+  const x = ((e.clientX - left) / width) * 100;
+  const y = ((e.clientY - top) / height) * 100;
+
+  setZoomStyle({
+    backgroundPosition: `${x}% ${y}%`,
+  });
 };
 
 // 🖨️ PRINT LABEL
@@ -524,10 +565,14 @@ const handlePrintBar = (items) => {
             {existingImages.map(img => (
               <div key={img.image_id} className="relative">
 
-                <img
-                  src={`https://akceramicworldadmin.unitdtechnologies.com/uploads/${img.image}`}
-                  className="w-20 h-20 object-cover rounded"
-                />
+              <img
+  src={`https://akceramicworldadmin.unitdtechnologies.com/uploads/${img.image}`}
+  className="w-20 h-20 object-cover rounded cursor-pointer"
+  onClick={() => {
+    setSelectedProduct(existingImages); // pass full array
+    setCurrentIndex(existingImages.findIndex(i => i.image_id === img.image_id));
+  }}
+/>
 
                 <button
                   type="button"
@@ -542,15 +587,19 @@ const handlePrintBar = (items) => {
           </div>
 
           {/* 🖼 NEW */}
-          <h4 className="font-semibold mt-4">New Images</h4>
+          <h4 className="font-semibold mt-4">New Images exceed 750KB</h4>
           <div className="flex gap-3 flex-wrap">
             {newImages.map((img, i) => (
               <div key={i} className="relative">
 
                 <img
-                  src={img.url}
-                  className="w-20 h-20 object-cover rounded"
-                />
+  src={img.url}
+  className="w-20 h-20 object-cover rounded cursor-pointer"
+  onClick={() => {
+    setSelectedProduct(newImages.map(n => ({ image: n.url })));
+    setCurrentIndex(i);
+  }}
+/>
 
                 <button
                   type="button"
@@ -627,6 +676,119 @@ const handlePrintBar = (items) => {
 
         </form>
       </div>
+        {/* ✅ IMAGE MODAL (FIXED) */}
+ <AnimatePresence>
+  {selectedProduct.length > 0 && (
+    <motion.div
+      className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="bg-white rounded-xl w-[900px] max-w-[95%] p-5 relative shadow-2xl flex gap-4"
+        initial={{ scale: 0.8 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.8 }}
+      >
+
+        {/* ❌ CLOSE */}
+        <button
+          className="absolute top-3 right-3 text-xl"
+          onClick={() => setSelectedProduct([])}
+        >
+          ✖
+        </button>
+
+        {/* 🔹 LEFT SIDE THUMBNAILS */}
+        <div className="flex flex-col gap-3 overflow-y-auto max-h-[450px] pr-2">
+          {selectedProduct.map((img, index) => {
+            const src = img.image?.startsWith("blob")
+              ? img.image
+              : `https://akceramicworldadmin.unitdtechnologies.com/uploads/${img.image}`;
+
+            return (
+              <img
+                key={index}
+                src={src}
+                onClick={() => setCurrentIndex(index)}
+                className={`w-20 h-20 object-cover rounded cursor-pointer border-2 transition
+                  ${currentIndex === index
+                    ? "border-red-500 scale-105"
+                    : "border-gray-300"
+                  }
+                `}
+              />
+            );
+          })}
+        </div>
+
+        {/* 🔹 MAIN IMAGE + ZOOM */}
+        <div className="flex-1 flex flex-col items-center">
+
+          {/* 🔍 ZOOM CONTAINER */}
+          <div
+            onMouseMove={handleZoom}
+            onMouseLeave={() => setZoomStyle({})}
+            className="w-full h-[450px] border rounded overflow-hidden relative"
+          >
+            <div
+              style={{
+                backgroundImage: `url(${
+                  selectedProduct[currentIndex]?.image?.startsWith("blob")
+                    ? selectedProduct[currentIndex].image
+                    : `https://akceramicworldadmin.unitdtechnologies.com/uploads/${selectedProduct[currentIndex]?.image}`
+                })`,
+                backgroundSize: zoomStyle.backgroundPosition ? "200%" : "contain",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: zoomStyle.backgroundPosition || "center",
+                width: "100%",
+                height: "100%",
+              }}
+            />
+          </div>
+
+          {/* 🔁 NAV */}
+          <div className="flex justify-between w-full mt-3">
+            <button
+              className="bg-gray-200 px-4 py-1 rounded"
+              onClick={() =>
+                setCurrentIndex(
+                  currentIndex === 0
+                    ? selectedProduct.length - 1
+                    : currentIndex - 1
+                )
+              }
+            >
+              ◀ Prev
+            </button>
+
+            <button
+              className="bg-gray-200 px-4 py-1 rounded"
+              onClick={() =>
+                setCurrentIndex(
+                  currentIndex === selectedProduct.length - 1
+                    ? 0
+                    : currentIndex + 1
+                )
+              }
+            >
+              Next ▶
+            </button>
+          </div>
+
+          {/* 🧾 DETAILS */}
+          <div className="mt-3 text-center">
+            <h2 className="text-xl font-bold">{form.product_name}</h2>
+            <p className="text-gray-600 text-lg">₹{form.price}</p>
+          </div>
+
+        </div>
+
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
     </div>
   );
 }
